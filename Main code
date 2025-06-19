@@ -1,0 +1,114 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.List;
+
+class Movie {
+    String title;
+    int totalSeats;
+    int availableSeats;
+
+    public Movie(String title, int totalSeats) {
+        this.title = title;
+        this.totalSeats = totalSeats;
+        this.availableSeats = totalSeats;
+    }
+
+    public boolean bookSeats(int count) {
+        if (count <= availableSeats) {
+            availableSeats -= count;
+            return true;
+        }
+        return false;
+    }
+
+    public String toString() {
+        return title + " (Available: " + availableSeats + ")";
+    }
+}
+
+public class MovieTicketBookingSystemGUI extends JFrame {
+    private JComboBox<Movie> movieComboBox;
+    private JTextField ticketCountField;
+    private JButton bookButton;
+    private JLabel availableLabel;
+    private List<Movie> movies;
+
+    public MovieTicketBookingSystemGUI() {
+        setTitle("Movie Ticket Booking System");
+        setSize(400, 250);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null); // center
+
+        movies = new ArrayList<>();
+        movies.add(new Movie("Avengers: Endgame", 50));
+        movies.add(new Movie("Inception", 40));
+        movies.add(new Movie("The Dark Knight", 30));
+
+        initComponents();
+    }
+
+    private void initComponents() {
+        JPanel panel = new JPanel(new GridLayout(5, 1, 10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+
+        movieComboBox = new JComboBox<>(movies.toArray(new Movie[0]));
+        ticketCountField = new JTextField();
+        bookButton = new JButton("Book Tickets");
+        availableLabel = new JLabel("Select a movie to see available seats.");
+
+        panel.add(new JLabel("Select Movie:"));
+        panel.add(movieComboBox);
+        panel.add(new JLabel("Enter number of tickets:"));
+        panel.add(ticketCountField);
+        panel.add(bookButton);
+        panel.add(availableLabel);
+
+        add(panel);
+
+        movieComboBox.addActionListener(e -> updateAvailabilityLabel());
+        bookButton.addActionListener(e -> bookTickets());
+
+        updateAvailabilityLabel();
+    }
+
+    private void updateAvailabilityLabel() {
+        Movie selectedMovie = (Movie) movieComboBox.getSelectedItem();
+        if (selectedMovie != null) {
+            availableLabel.setText("Available Seats: " + selectedMovie.availableSeats);
+        }
+    }
+
+    private void bookTickets() {
+        Movie selectedMovie = (Movie) movieComboBox.getSelectedItem();
+        if (selectedMovie == null) return;
+
+        String countStr = ticketCountField.getText().trim();
+        int count;
+
+        try {
+            count = Integer.parseInt(countStr);
+            if (count <= 0) throw new NumberFormatException();
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Please enter a valid number of tickets.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        if (selectedMovie.bookSeats(count)) {
+            JOptionPane.showMessageDialog(this, "Booking successful for \"" + selectedMovie.title + "\"!");
+        } else {
+            JOptionPane.showMessageDialog(this, "Not enough seats available.", "Booking Failed", JOptionPane.WARNING_MESSAGE);
+        }
+
+        movieComboBox.repaint();
+        updateAvailabilityLabel();
+        ticketCountField.setText("");
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            new MovieTicketBookingSystemGUI().setVisible(true);
+        });
+    }
+}
